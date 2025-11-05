@@ -1,64 +1,124 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>テンポ知覚実験（A/B自由再生）</title>
 <style>
-  body { font-family: "Yu Gothic", sans-serif; background:#f8faf8; text-align:center; padding:28px; }
-  .card { background:white; display:inline-block; padding:20px 28px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
-  button { padding:10px 18px; margin:8px; border-radius:8px; border:none; background:#4CAF50; color:#fff; cursor:pointer; font-size:15px; }
-  button:disabled { opacity:0.5; cursor:not-allowed; }
-  input, select { padding:6px; margin:6px; }
-  textarea { width:600px; height:220px; }
-  #experiment, #end { display:none; }
+  body {
+    font-family: "Yu Gothic", sans-serif;
+    background: #f8faf8;
+    text-align: center;
+    margin: 0;
+    padding: 12px;
+  }
+
+  .card {
+    background: white;
+    display: inline-block;
+    width: 95%;
+    max-width: 600px;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    margin-top: 16px;
+  }
+
+  h1, h2 { font-size: 1.4rem; margin-bottom: 12px; }
+  p { font-size: 1.1rem; line-height: 1.6; }
+
+  input, select { font-size: 1rem; padding: 8px; margin: 8px; width: 80%; max-width: 300px; }
+  textarea { width: 90%; max-width: 500px; height: 180px; font-size: 0.9rem; }
+
+  button {
+    font-size: 1.2rem;
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    margin: 8px;
+    min-width: 120px;
+  }
+
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  #buttons {
+  display: flex;           /* 横並び */
+  justify-content: center; /* 中央寄せ */
+  margin-top: 24px;        /* 上の再生ボタンとの間隔 */
+}
+  
+
+  #sameBtn { background-color: #4CAF50; color: white; margin-top:40px; margin-right: 25px;}
+  #diffBtn { background-color: #f44336; color: white; margin-top:40px; margin-left: 25px; }
+
+  #form, #experiment, #end { display: none; }
+
+  @media (max-width: 600px) {
+    h1, h2 { font-size: 1.3rem; }
+    p { font-size: 1rem; }
+     #sameBtn, #diffBtn {
+    width: 45%;       /* ボタンを少し小さめにして横に並べる */
+    font-size: 1.1rem;
+  }
+  }
+
+  @media (min-width: 601px) {
+    body { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
+    .card { max-width: 600px; margin: 30px auto; text-align: center; }
+  }
 </style>
 </head>
 <body>
-  <div class="card" id="welcome">
-    <h1>音楽テンポの違和感実験</h1>
-    <p>ABをそれぞれ再生して、ふたつのテンポが「同じ」か「違う」かを答えてください。<br>準備できたら「開始」ボタンを押してください。</p>
-    <button onclick="showForm()">開始する</button>
+<div class="card" id="welcome">
+  <h1>音楽テンポの違和感実験</h1>
+  <p>ABをそれぞれ再生して、ふたつのテンポが「同じ」か「違う」かを答えてください。<br>準備できたら「開始」ボタンを押してください。</p>
+  <button onclick="showForm()">開始する</button>
+</div>
+
+<div class="card" id="form">
+  年齢：<input type="number" id="age" min="10" max="100"><br>
+  性別：
+  <select id="gender">
+    <option value="">選んでください</option>
+    <option>女性</option><option>男性</option><option>その他</option>
+  </select><br>
+  普段よく使う音楽アプリ：
+  <select id="musicApp">
+    <option value="">選んでください</option>
+    <option>YouTube</option><option>YouTube Music</option><option>Spotify</option><option>Apple Music</option>
+    <option>Amazon Music</option><option>LINE Music</option><option>SoundCloud</option><option>その他</option>
+  </select><br><br>
+  <button onclick="startExperiment()">実験開始</button>
+</div>
+
+<div class="card" id="experiment">
+  <h2>試行 <span id="trialNum">1</span> / 20</h2>
+  <p id="instr">AとBを再生して、ふたつのテンポが「同じ」か「違う」かを直観的に選んでください。</p>
+
+  <div>
+    <button id="btnA" onclick="toggleSound('A')">▶ A</button>
+    <button id="btnB" onclick="toggleSound('B')">▶ B</button>
   </div>
 
-  <div class="card" id="form" style="display:none; margin-top:18px;">
-    <!-- <h2>被験者情報</h2> -->
-    年齢：<input type="number" id="age" min="10" max="100"><br>
-    性別：
-    <select id="gender"><option value="">選んでください</option><option>女性</option><option>男性</option><option>その他</option></select><br>
-    <!-- 音楽経験：
-    <select id="experience"><option value="">選んでください</option><option>なし</option><option>少し（趣味）</option><option>ある（部活等）</option><option>専門的</option></select><br> -->
-    普段よく使う音楽アプリ：
-    <select id="musicApp">
-      <option value="">選んでください</option>
-      <option>YouTube</option><option>YouTube Music</option><option>Spotify</option><option>Apple Music</option>
-      <option>Amazon Music</option><option>LINE Music</option><option>SoundCloud</option><option>その他</option>
-    </select><br><br>
-    <button onclick="startExperiment()">実験開始</button>
-  </div>
-
-  <div class="card" id="experiment" style="margin-top:18px;">
-    <h2>試行 <span id="trialNum">1</span> / 20</h2>
-    <p id="instr">AとBを再生して、ふたつのテンポが「同じ」か「違う」かを直観的に選んでください。</p>
-
-    <audio id="playerA" src="music_base (mp3cut.net).mp3"></audio>
-    <audio id="playerB" src="music_base (mp3cut.net).mp3"></audio><br>
-
-    <button id="playA" onclick="playSound('A')">Aを再生</button>
-    <button id="playB" onclick="playSound('B')">Bを再生</button><br>
-
+  <div id="buttons">
     <button id="sameBtn" onclick="respond(true)" disabled>同じ</button>
     <button id="diffBtn" onclick="respond(false)" disabled>違う</button>
-
-    <p id="status" style="color:#666; margin-top:12px;"></p>
   </div>
 
-  <div class="card" id="end" style="margin-top:18px;">
-    <h2>終了です。ご協力ありがとうございました。</h2>
-    <p>データを以下からダウンロードして、菅原に送信してください。</p>
-    <p>よろしくお願いします！！</p>
-    <button onclick="downloadCSV()">CSVをダウンロード</button><br><br>
-    <textarea id="log" readonly></textarea>
-  </div>
+  <p id="status" style="color:#666; margin-top:12px;"></p>
+
+  <audio id="playerA" src="music_base (mp3cut.net).mp3"></audio>
+  <audio id="playerB" src="music_base (mp3cut.net).mp3"></audio>
+</div>
+
+<div class="card" id="end">
+  <h2>終了です。ご協力ありがとうございました。</h2>
+  <p>データを以下からダウンロードして、菅原に送信してください。</p>
+  <button onclick="downloadCSV()">CSVをダウンロード</button><br><br>
+  <textarea id="log" readonly></textarea>
+</div>
 
 <script>
 const TOTAL_TRIALS = 20;
@@ -73,22 +133,23 @@ let history = [];
 let subjectInfo = {};
 let consecutiveCorrectDifferent = 0;
 let csvContent = ""; 
+let hasPlayedA = false;
+let hasPlayedB = false;
 
 function showForm() {
   document.getElementById('welcome').style.display = 'none';
   document.getElementById('form').style.display = 'block';
 }
 
-async function startExperiment() {
+function startExperiment() {
   const age = document.getElementById('age').value;
   const gender = document.getElementById('gender').value;
-  //const experience = document.getElementById('experience').value;
   const musicApp = document.getElementById('musicApp').value;
-  if (!age || !gender || !experience || !musicApp) {
+  if (!age || !gender  || !musicApp) {
     alert('すべての項目を入力してください');
     return;
   }
-  subjectInfo = { age, gender, experience, musicApp };
+  subjectInfo = { age, gender, musicApp };
 
   document.getElementById('form').style.display = 'none';
   document.getElementById('experiment').style.display = 'block';
@@ -98,31 +159,48 @@ async function startExperiment() {
 function prepareTrial() {
   const isSameTrial = Math.random() < SAME_PROB;
   const targetRate = speedSteps[stepIndex];
-  const slowerRate = 1 / targetRate;
+  const slowerRate = 1/targetRate;
   const changedIsA = (!isSameTrial) && (Math.random() < 0.5);
   const A_rate = (isSameTrial ? 1.00 : (changedIsA ? slowerRate : 1.00));
   const B_rate = (isSameTrial ? 1.00 : (changedIsA ? 1.00 : slowerRate));
-
   window._currentTrial = { trial, isSameTrial, changedIsA, A_rate, B_rate, stepIndex };
+
+  // フラグリセット
+  hasPlayedA = false;
+  hasPlayedB = false;
+  document.getElementById('btnA').textContent = "▶ A";
+  document.getElementById('btnB').textContent = "▶ B";
+  document.getElementById('sameBtn').disabled = true;
+  document.getElementById('diffBtn').disabled = true;
   updateStatus(`A/Bを再生してください。`);
 }
 
-function playSound(label) {
+function toggleSound(label) {
+  const player = label === 'A' ? document.getElementById('playerA') : document.getElementById('playerB');
+  const btn = label === 'A' ? document.getElementById('btnA') : document.getElementById('btnB');
   const info = window._currentTrial;
-  if (!info) return;
-  const player = (label === 'A') ? document.getElementById('playerA') : document.getElementById('playerB');
-  player.pause();
-  player.currentTime = 0;
-  const rate = (label === 'A') ? info.A_rate : info.B_rate;
-  player.playbackRate = rate;
-  player.play();
-  document.getElementById('sameBtn').disabled = false;
-  document.getElementById('diffBtn').disabled = false;
+
+  if (player.paused) {
+    const rate = label === 'A' ? info.A_rate : info.B_rate;
+    player.playbackRate = rate;
+    player.play();
+    btn.textContent = "■ " + label;
+    if (label === 'A') hasPlayedA = true;
+    if (label === 'B') hasPlayedB = true;
+  } else {
+    player.pause();
+    player.currentTime = 0;
+    btn.textContent = "▶ " + label;
+  }
+
+  if (hasPlayedA && hasPlayedB) {
+    document.getElementById('sameBtn').disabled = false;
+    document.getElementById('diffBtn').disabled = false;
+  }
 }
 
 function respond(isSameButton) {
   const info = window._currentTrial;
-  if (!info) return;
   const subjectSaysSame = !!isSameButton;
   const trialWasSame = !!info.isSameTrial;
   const correct = (trialWasSame && subjectSaysSame) || (!trialWasSame && !subjectSaysSame);
@@ -145,37 +223,24 @@ function respond(isSameButton) {
       consecutiveCorrectDifferent = 0;
     }
   } else {
-    if (!subjectSaysSame) {
-      stepIndex = Math.min(speedSteps.length - 1, stepIndex + 1);
-    }
+    if (!subjectSaysSame) stepIndex = Math.min(speedSteps.length - 1, stepIndex + 1);
   }
 
   trial++;
   if (trial > TOTAL_TRIALS) return finishExperiment();
   document.getElementById('trialNum').textContent = trial;
-  document.getElementById('sameBtn').disabled = true;
-  document.getElementById('diffBtn').disabled = true;
   prepareTrial();
 }
 
-function updateStatus(s) {
-  document.getElementById('status').textContent = s;
-}
+function updateStatus(s) { document.getElementById('status').textContent = s; }
 
 function finishExperiment() {
   document.getElementById('experiment').style.display = 'none';
   document.getElementById('end').style.display = 'block';
 
-  // ✅ 英語変換
   const genderEng = subjectInfo.gender === "女性" ? "female" :
                     subjectInfo.gender === "男性" ? "male" : "other";
-//   const expEng =
-//     subjectInfo.experience === "なし" ? "none" :
-//     subjectInfo.experience === "少し（趣味）" ? "hobby" :
-//     subjectInfo.experience === "ある（部活等）" ? "club" :
-//     subjectInfo.experience === "専門的" ? "professional" : "unknown";
-
-  const header = ['age','gender','experience','musicApp','trial','isSameTrial','changedIsA','A_rate','B_rate','stepIndex','subjectSaysSame','correct'];
+  const header = ['age','gender','musicApp','trial','isSameTrial','changedIsA','A_rate','B_rate','stepIndex','subjectSaysSame','correct'];
   let txt = header.join(',') + '\n';
   history.forEach(h=>{
     txt += `${subjectInfo.age},${genderEng},${subjectInfo.musicApp},${h.trial},${h.isSameTrial},${h.changedIsA},${h.A_rate},${h.B_rate},${h.stepIndex},${h.subjectSaysSame},${h.correct}\n`;
@@ -190,7 +255,6 @@ function downloadCSV() {
     alert("まだ実験結果がありません。実験を最後まで行ってください。");
     return;
   }
-  // ✅ BOM付きUTF-8で出力
   const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
   const blob = new Blob([bom, csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -203,3 +267,5 @@ function downloadCSV() {
 </script>
 </body>
 </html>
+
+
