@@ -122,7 +122,7 @@
 
 <script>
 const TOTAL_TRIALS = 20;
-const MIN_RATE = 0.50, MAX_RATE = 1.50, STEP = 0.02;
+const MIN_RATE = 0.50, MAX_RATE = 1.00, STEP = 0.02;
 const SAME_PROB = 0.3;
 const speedSteps = [];
 for (let r = MIN_RATE; r <= MAX_RATE + 1e-9; r += STEP) speedSteps.push(parseFloat(r.toFixed(2)));
@@ -159,10 +159,9 @@ function startExperiment() {
 function prepareTrial() {
   const isSameTrial = Math.random() < SAME_PROB;
   const targetRate = speedSteps[stepIndex];
-  const slowerRate = 1/targetRate;
   const changedIsA = (!isSameTrial) && (Math.random() < 0.5);
-  const A_rate = (isSameTrial ? 1.00 : (changedIsA ? slowerRate : 1.00));
-  const B_rate = (isSameTrial ? 1.00 : (changedIsA ? 1.00 : slowerRate));
+  const A_rate = (isSameTrial ? 1.00 : (changedIsA ? targetRate : 1.00));
+  const B_rate = (isSameTrial ? 1.00 : (changedIsA ? 1.00 : targetRate));
   window._currentTrial = { trial, isSameTrial, changedIsA, A_rate, B_rate, stepIndex };
 
   // フラグリセット
@@ -215,11 +214,12 @@ function respond(isSameButton) {
     if (correct) {
       consecutiveCorrectDifferent++;
       if (consecutiveCorrectDifferent >= 2) {
-        stepIndex = Math.max(0, stepIndex - 1);
+        stepIndex = Math.min(speedSteps.length - 1, stepIndex + 1);
         consecutiveCorrectDifferent = 0;
       }
     } else {
-      stepIndex = Math.min(speedSteps.length - 1, stepIndex + 1);
+      
+      stepIndex = Math.max(0, stepIndex - 1);
       consecutiveCorrectDifferent = 0;
     }
   } else {
